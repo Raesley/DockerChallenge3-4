@@ -1,0 +1,42 @@
+services:
+
+  nginx:
+    image: nginx:latest
+    ports:
+    - "8080:80"
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - node-service
+    networks:
+      - docker-network
+
+  node-service:
+    image: alpine:latest
+    deploy: 
+      replicas: 3
+    build: .
+    env_file: variables.env
+    volumes:
+    - .:/usr/app
+    - /usr/app/node_modules
+    ports:
+    - "3000:3000"
+    depends_on:
+    - dbHost
+    networks:
+    - docker-network
+
+  dbHost:
+    image: mysql:latest
+    restart: always
+    env_file: variables.env
+    ports:
+    - "3306:3306"
+    networks:
+     - docker-network
+
+
+networks:
+  docker-network:
+   driver: bridge
